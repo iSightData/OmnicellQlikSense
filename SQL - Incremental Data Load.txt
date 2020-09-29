@@ -1,0 +1,58 @@
+//After loading the inital data load. Move this incremental script above the initial data load script.
+​
+/*Load the unique transaction IDs from the QVD file. 
+Insert your folder connection by changing the TCH script to match the name of your folder connection and file name from the initial load.
+Syntax: [lib://FolderConnectionName/FileName.qvd]
+*/
+IDLoad:
+LOAD TransactionID FROM [lib://FolderConnection/Omnicell.qvd] (qvd);
+​
+//Find the max transaction ID using a resident table.
+MaxIDLoad:
+LOAD max(TransactionID) as MaxID Resident IDLoad;
+​
+//Pass the MaxID into a variable for the SQL script to use
+LET MaxID = PEEK('MaxID',0,'MaxIDLoad');
+​
+/*Insert your OLE DB Omnicell server connection here.  This UpdatedQuery script is the same as your initial load script except it selects only the NEW records since your
+last load using your max TrasnactionID (MaxID)*/
+​
+UpdatedQuery:
+SQL
+​
+Select
+​
+xact.xact_key AS TransactionID
+,xact.xact_dati AS TransactionDateNBR
+,xact.xfer_type AS TransferTypeCD
+,xact.null_type AS NullTypeCD
+,xact.qty AS ChargeQuantityNBR
+,xact.qty_onhand AS OnHandQuantityNBR
+,xact.waste_qty AS WasteAmountTXT
+,xact.qty_req AS RequisitionNBR
+,xact.bill_dati AS TransactionBilledDTS
+,xact.countback AS CountBackFLG
+,xact.issuedisch AS IssueToDischargePatientAllowedFLG
+,xact.mooverride AS MedicationOrderOverrideFLG
+,xact.medb_act AS MedicationBTransactionFromSupplierFLG
+,xact.tpat_recon AS TempPatientReconciliationStatusCD
+,xact.rtnreason AS ReasonForReturningItemCD
+,xact.xact_misc AS TransactionMiscellaneousNM
+,xact.xact_misc2 AS TransactionMiscellaneous2NM
+,xact.dati_misc AS MiscellaneousDateNBR
+,xact.dose AS DoseAmountNBR
+,xact.ia_dose AS IntendedActualDoseNBR
+,xact.lomni_stid AS LinkedOmniSupplierNM
+,xact.dose_xa AS DoseTransactionFLG
+,xact.lu_dati AS LastUpdatedEntryDateNBR
+,xact.lu_from AS LastUpdatedLocationNM
+,xact.area_key AS InternalAreaID
+,xact.cost_key AS InternalCostCenterID
+,xact.drg_key AS InternalDRGID
+,xact.icd9_key AS ICD9CodeID
+,xact.item_key AS InternalItemID
+,xact.med_key AS InternalMedicationID
+,xact.omni_key AS InternalOmniID
+,xact.pat_key AS InternalPatientKeyID
+,xact.site_key AS InternalSiteID
+,xact.user_key AS InternalUserID
